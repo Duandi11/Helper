@@ -1,10 +1,8 @@
-from multiprocessing import context
 from xml.etree.ElementTree import Element
 from xml.etree.ElementTree import SubElement
 from xml.etree.ElementTree import ElementTree
 
-from xml.dom import minidom
-
+import re
 sourceFileName = "/home/duandi/.bash_aliases"
 sourceFile = []
 targetFileName = './hello.xml'
@@ -25,12 +23,23 @@ def generateXml(sourceFile, targetFileName):
     index = 0
     while index <len(sourceFile) :
         if sourceFile[index].startswith('# '):
-            Root = Element(sourceFile[index])
+            head = sourceFile[index].replace('# ','')
+            head = re.sub(' : .*$', '', head)
+            Root = Element(head)
+
         elif sourceFile[index].startswith('## '):
-            second = SubElement(Root, sourceFile[index])
+            head = sourceFile[index].replace('## ','')
+            head = re.sub(' : .*$', '', head)
+            second = SubElement(Root, head)
+
         else:
-            child = SubElement(second, sourceFile[index])
-            child.text = sourceFile[index]
+            head = sourceFile[index].replace('### ','')
+            content = head
+            head = re.sub(' : .*$', '', head)
+            content = re.sub('&&','and',content)
+            child = SubElement(second, head)
+            child.text = content
+
         index += 1
     prettyXml(Root,'\t', '\n')
     tree = ElementTree(Root)
@@ -57,5 +66,3 @@ def prettyXml(element, indent, newline, level = 0):
 
 readShell(sourceFileName)
 generateXml(sourceFile, targetFileName)
-
-
